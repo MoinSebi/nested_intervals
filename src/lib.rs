@@ -276,18 +276,19 @@ pub fn start_stop_check(intervals: & Vec<(u32, u32)>) -> bool{
 
 
 /// If entries are not in order, change them
-pub fn start_stop_order(intervals: &mut Vec<(u32, u32)>) -> bool{
+pub fn start_stop_order(intervals: &mut Vec<(u32, u32)>){
     let mut change_list: Vec<usize> = Vec::new();
     for  (i, x)  in intervals.iter().enumerate(){
-        if x.0 < x.1{
+        if x.0 > x.1{
             change_list.push(i)
 
         }
     }
+    println!("LENNNN {}", change_list.len());
+    println!("LENNNN {:?}", change_list);
     for x in change_list.iter(){
-        intervals[*x] = (intervals[*x].0, intervals[*x].1)
+        intervals[*x] = (intervals[*x].1, intervals[*x].0)
     }
-    true
 }
 
 
@@ -310,7 +311,7 @@ pub fn check_overlapping(intervals: &mut Vec<(u32, u32)>) -> bool{
 
 #[cfg(test)]
 mod tests {
-    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit, check_overlapping, make_nested_simple, get_parents};
+    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit, check_overlapping, make_nested_simple, get_parents, start_stop_check, start_stop_order};
 
 
     // cargo test -- --nocapture
@@ -450,5 +451,34 @@ mod tests {
         //make_nested(&k, & mut network);
         make_nested_simple(&k2, & mut network);
         println!("{:?}", network);
+    }
+
+    #[test]
+    fn check_order() {
+        let i1: (u32, u32) = (1, 20);
+        let i2: (u32, u32) = (10, 1);
+        let i3: (u32, u32) = (9, 20);
+        let i4: (u32, u32) = (11, 13);
+        let i5: (u32, u32) = (11, 12);
+        let i6: (u32, u32) = (11, 11);
+        let mut k: Vec<(u32, u32)> = Vec::new();
+        k.push(i1);
+        k.push(i2);
+        k.push(i3);
+        k.push(i4);
+        k.push(i5);
+
+        let mut k2: Vec<(u32, u32)> = Vec::new();
+        k2.push(i6);
+        k2.push(i2);
+        k2.push(i3);
+        k2.push(i4);
+        k2.push(i5);
+
+        assert_eq!(start_stop_check(&k), false);
+        assert_eq!(start_stop_check(&k2), false);
+        start_stop_order(& mut k);
+        assert_eq!(k[1], (1,10));
+
     }
 }
