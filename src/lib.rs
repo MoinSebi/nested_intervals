@@ -88,7 +88,6 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
     
     // Iterate over sorted unique interval vector 
     for (start, end) in intervals_sorted.iter(){
-        println!("\nNew round {:?}", (start, end));
 
 
         // If empty (just at the start), add to openintervals
@@ -116,10 +115,8 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
                 order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(hits[0]);
                 order.get_mut(&hits[0]).unwrap().child.push((start.clone(), end.clone()));
             } else {
-                println!("HITS {:?}", hits);
                 //println!("We need to filter");
                 filter_hit(& mut hits);
-                println!("HITS {:?}", hits);
                 for x in hits{
                     order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(x);
                     order.get_mut(&x).unwrap().child.push((start.clone(), end.clone()));

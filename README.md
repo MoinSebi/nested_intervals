@@ -1,3 +1,3 @@
 # Nested_intervals
 
-Get parent-children relationship from intervals. 
+Get parent-children relationship for intervals. 
