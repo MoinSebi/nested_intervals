@@ -4,7 +4,7 @@ use std::hash::Hash;
 use log::debug;
 
 
-/// Each interval has a parent and child
+/// Gives parent and child relation ship
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
 pub struct Network{
     pub parent: Vec<(u32, u32)>,
@@ -25,9 +25,8 @@ impl Network{
 
 }
 
-/// Get all parents
-///
-/// Not sure if cloned is the right way
+
+/// Get all parents of a index
 pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> HashSet<(u32, u32)>{
     let mut hh: HashSet<(u32, u32)> = HashSet::new();
     if hm.get(start).unwrap().parent.len() != 0{
@@ -79,11 +78,20 @@ pub fn fast_helper(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
 }
 
 
-/// Give sense to Network 
-/// 
-/// Adding parent-child relation ship
-/// This is also a wrapper for recursive function
-/// 
+/// Fill the graph structure
+/// Input:
+///     - intervals_sorted Vec<(u32, u32)>: Sorted interval (no duplicates)
+///     - order: HashMap<(u32, u32), Network>): Interval relation (this is empty)
+///
+/// Output:
+///     -
+///
+/// Running:
+///     - Iterate over all intervals and sort them to open bubbles
+///     - If there is some kind of relation -> Add to parent, add to child
+///     - Some kind of wrapper function
+/// Check:
+///     - checker_rev
 pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u32, u32), Network>){
     debug!("Running nested");
     let mut open_intervals: Vec<(u32, u32)> = Vec::new();
@@ -96,9 +104,11 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
         if open_intervals.len() == 0{
             open_intervals.push((start.clone(), end.clone()));
         } else {
+            // Hits = direct relationship (child)
+            // Overlaps = Overlap but not fully covered
             let mut hits: Vec<(u32, u32)> = Vec::new();
             let mut overlaps: Vec<(u32, u32)> = Vec::new();
-            
+
             // Iterate over open intervals
             // For each interval: Start checking, when and if hit or overlap
             for (oldstart, oldend) in open_intervals.iter(){
@@ -143,8 +153,25 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 }
 
 
-/// Remove all parents here - maybe slow
+/// In a list of intervals, check if some are related to each other (very slow)
+/// Complexity: O(n^2)
+/// Input:
+///     - candidates Vec<(u32, u32)>: List of intervals to check
+///
+/// Mut:
+///     - candidates Vec<(u32, u32)>: List of intervals to check
+///
+/// Output:
+///     -
+///
+/// Running:
+///     - Iterate over the list, check if the relation between the candidates
+///
+/// TODO:
+/// - Stuff is removed at the end, checking like everything
+/// - if true --> remove rerun
 pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
+    debug!("Running filter hit");
     loop{
         let mut trigger = false;
         let mut remove_list: HashSet<usize> = HashSet::new();
@@ -177,7 +204,25 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
 
 }
 
-/// Recursive
+/// Recursive main function
+/// Input:
+///     - old: "old" interval
+///     - new: "new" interval
+///     - hm: main structure to change (needed for parents)
+///     - overlaps_parent: bool
+///
+/// Output:
+///     - (hit, overlap)
+///
+/// Running:
+///     1. Check if new interval is within the old one -> Hit and not overlap
+///     2. if not (no hit or interval):
+///         - if your parent is not overlapping and you overlap -> not interesting
+///         - rerun everything with the parent (recursive)
+///         - merge return
+///
+/// Problem:
+///     - You can check the same interval multiple times
 pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
     debug!("Running checker recusive");
     //println!("Checking this interval {:?}", old);
@@ -263,8 +308,14 @@ pub fn remove_duplicates(intervals: & mut Vec<(u32, u32)> ){
 
 
 /// Check if start and stop in order
-///
-/// Return: bool
+/// Input:
+///     - intervals: & Vec<(u32, u32)>)
+/// Return:
+///     - bool:
+///         - false if not in order
+///         - true if in order
+/// Problem:
+///     - not 100% right
 pub fn start_stop_check(intervals: & Vec<(u32, u32)>) -> bool{
     for x in intervals.iter(){
         if x.0 < x.1{
@@ -284,8 +335,6 @@ pub fn start_stop_order(intervals: &mut Vec<(u32, u32)>){
 
         }
     }
-    println!("LENNNN {}", change_list.len());
-    println!("LENNNN {:?}", change_list);
     for x in change_list.iter(){
         intervals[*x] = (intervals[*x].1, intervals[*x].0)
     }
