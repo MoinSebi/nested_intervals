@@ -1,5 +1,5 @@
 [package]
-name = "nested_intervals"
+name = "related_intervals"
 version = "0.1.0"
 edition = "2018"
 license = "MIT"
@@ -10,3 +10,6 @@ description = "Relationship between intervals"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4.0"
+env_logger = "0.8.4"
+chrono = "0.4"

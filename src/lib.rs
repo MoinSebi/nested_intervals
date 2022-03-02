@@ -1,6 +1,7 @@
 use std::iter::FromIterator;
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
+use log::debug;
 
 
 /// Each interval has a parent and child
@@ -84,6 +85,7 @@ pub fn fast_helper(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
 /// This is also a wrapper for recursive function
 /// 
 pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u32, u32), Network>){
+    debug!("Running nested");
     let mut open_intervals: Vec<(u32, u32)> = Vec::new();
     
     // Iterate over sorted unique interval vector 
@@ -177,6 +179,7 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
 
 /// Recursive
 pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
+    debug!("Running checker recusive");
     //println!("Checking this interval {:?}", old);
     let mut hits: Vec<(u32, u32)> = Vec::new();
     let mut overlaps: Vec<(u32, u32)> = Vec::new();
