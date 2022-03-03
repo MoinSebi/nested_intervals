@@ -186,7 +186,7 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
                         remove_list.insert(i1);
                     // y ist der parent
                     } else {
-                        remove_list.insert(i2);
+                        remove_list.insert(i2+i1);
                     }
                 }
             }
