@@ -112,7 +112,8 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
             // Iterate over open intervals
             // For each interval: Start checking, when and if hit or overlap
             for (oldstart, oldend) in open_intervals.iter(){
-                let mut solution = checker_rec(&(oldstart.clone(), oldend.clone()), &(start.clone(), end.clone()), order, false);
+                let mut hs = HashSet::new();
+                let mut solution = checker_rec2(&(oldstart.clone(), oldend.clone()), &(start.clone(), end.clone()), order, false, & mut hs);
                 hits.append(& mut solution.0);
                 overlaps.append(& mut solution.1);
 
@@ -204,6 +205,52 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
 
 }
 
+
+/// In a list of intervals, check if some are related to each other (very slow)
+/// Complexity: O(n^2)
+/// Input:
+///     - candidates Vec<(u32, u32)>: List of intervals to check
+///
+/// Mut:
+///     - candidates Vec<(u32, u32)>: List of intervals to check
+///
+/// Output:
+///     -
+///
+/// Running:
+///     - Iterate over the list, check if the relation between the candidates
+///
+/// TODO:
+/// - Stuff is removed at the end, checking like everything
+/// - if true --> remove rerun
+pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
+    debug!("Running filter hit");
+    loop{
+        let mut trigger = false;
+        let mut remove_list: HashSet<usize> = HashSet::new();
+        for (i1, x) in candicates.iter().enumerate(){
+            for (i2, y) in candicates[i1+1..].iter().enumerate(){
+                // x is außerhalb von y (oder andersrum)
+                if (x.0<= y.0) == (x.1 >= y.1){
+                    trigger = true;
+                    // x is der parent
+                    if (x.0<= y.0) & (x.1 >= y.0){
+                        remove_list.insert(i1);
+                        // y ist der parent
+                    } else {
+                        remove_list.insert(i2);
+                    }
+                }
+            }
+        }
+        //println!("Remove {:?}", remove_list);
+        for (i,x) in remove_list.iter().enumerate(){
+            candicates.remove(x-i);
+        }
+    }
+
+}
+
 /// Recursive main function
 /// Input:
 ///     - old: "old" interval
@@ -253,6 +300,70 @@ pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
                 //println!("{:?}", jo);
                 hits.append(&mut jo.0.clone());
                 overlaps.append(&mut jo.1.clone());
+            }
+        }
+    }
+    (hits.clone(), overlaps.clone())
+}
+
+
+
+/// Recursive main function
+/// Input:
+///     - old: "old" interval
+///     - new: "new" interval
+///     - hm: main structure to change (needed for parents)
+///     - overlaps_parent: bool
+///     - hs: HashSet of all already tested intervals
+///
+/// Output:
+///     - (hit, overlap)
+///
+/// Running:
+///     1. Check if new interval is within the old one -> Hit and not overlap
+///     2. if not (no hit or interval):
+///         - if your parent is not overlapping and you overlap -> not interesting
+///         - rerun everything with the parent (recursive)
+///         - merge return
+///
+/// Problem:
+///     - You can check the same interval multiple times
+pub fn checker_rec2(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool, hs: & mut HashSet<(u32, u32)>) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
+    debug!("Running checker recusive");
+    //println!("Checking this interval {:?}", old);
+    let mut hits: Vec<(u32, u32)> = Vec::new();
+    let mut overlaps: Vec<(u32, u32)> = Vec::new();
+
+    let mut now_overlapping: bool = false;
+
+    // It is a hit!
+    if (old.0 <= new.0) & (old.1 >= new.1) {
+
+        hits.push((old.0.clone(), old.1.clone()));
+    } else {
+        if (!overlaps_parent) & (old.1 > new.0) {
+            overlaps.push((old.0.clone(), old.1.clone()));
+            now_overlapping = true;
+        }
+
+        if hm.get(old).unwrap().parent.len() != 0 {
+            let mut vecc_p = Vec::new();
+            for x in hm.get(old).unwrap().parent.iter() {
+                //u.append(&mut helper1(x, new, hm));
+                vecc_p.push(x.clone());
+            }
+            for x in vecc_p.iter() {
+                eprintln!("hs2 {:?}", hs);
+                if !hs.contains(x){
+                    eprintln!("hs {:?}", hs);
+                    hs.insert(x.clone());
+                    eprintln!("hs {:?}", hs);
+                    //println!("{:?}", x);
+                    let jo = &mut checker_rec2(x, new, hm, now_overlapping, hs);
+                    //println!("{:?}", jo);
+                    hits.append(&mut jo.0.clone());
+                    overlaps.append(&mut jo.1.clone());
+                }
             }
         }
     }
@@ -444,6 +555,30 @@ mod tests {
         let i2: (u32, u32) = (1, 10);
         let i6: (u32, u32) = (2,6);
         let i4: (u32, u32) = (3,4);
+        let i5: (u32, u32) = (11,12);
+        let mut k: Vec<(u32, u32)> = Vec::new();
+        k.push(i1);
+        k.push(i2);
+        k.push(i4);
+        k.push(i5);
+        k.push(i6);
+
+        sort_vector(&mut k);
+        let mut network = create_network_hashmap(& k);
+        println!("{:?}", k);
+        //make_nested(&k, & mut network);
+        make_nested(&k, & mut network);
+        println!("{:?}", network);
+        let g = get_parents(&i2, &network);
+        println!("parents {:?}", g);
+    }
+
+    #[test]
+    fn overlap_check3(){
+        let i1: (u32, u32) = (1, 20);
+        let i2: (u32, u32) = (1, 10);
+        let i6: (u32, u32) = (7,10);
+        let i4: (u32, u32) = (9,15);
         let i5: (u32, u32) = (11,12);
         let mut k: Vec<(u32, u32)> = Vec::new();
         k.push(i1);
