@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
-use log::debug;
+use log::{debug, trace};
 
 
 /// Gives parent and child relation ship
@@ -173,6 +173,7 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 /// - if true --> remove rerun
 pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit");
+    trace!("Number of candidates {}", candicates.len());
     loop{
         let mut trigger = false;
         let mut remove_list: HashSet<usize> = HashSet::new();
@@ -195,7 +196,10 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
             }
         }
         //println!("Remove {:?}", remove_list);
+        trace!("Len remove_list {}", remove_list.len());
+        trace!("Remove list {:?}", remove_list);
         for (i,x) in remove_list.iter().enumerate(){
+            trace!("tt {}", x-i);
             candicates.remove(x-i);
         }
         if !trigger{
