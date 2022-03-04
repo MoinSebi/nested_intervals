@@ -171,6 +171,10 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 /// TODO:
 /// - Stuff is removed at the end, checking like everything
 /// - if true --> remove rerun
+/// PROBLEM:
+/// - remove list is not sorted
+/// --> Dont break and sort the list
+/// --> Break all the time and save what we have seen already
 pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit");
     trace!("Number of candidates {}", candicates.len());
@@ -191,14 +195,13 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
                     }
                 }
             }
-            if trigger{
-                break;
-            }
         }
         //println!("Remove {:?}", remove_list);
         trace!("Len remove_list {}", remove_list.len());
         trace!("Remove list {:?}", remove_list);
-        for (i,x) in remove_list.iter().enumerate(){
+        let mut rml: Vec<usize> = remove_list.iter().cloned().collect();
+        rml.sort();
+        for (i,x) in rml.iter().enumerate(){
             trace!("tt {}", x-i);
             candicates.remove(x-i);
         }
@@ -231,7 +234,7 @@ pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit");
     loop{
         let mut trigger = false;
-        let mut remove_list: HashSet<usize> = HashSet::new();
+        let mut remove_list: u32;
         for (i1, x) in candicates.iter().enumerate(){
             for (i2, y) in candicates[i1+1..].iter().enumerate(){
                 // x is außerhalb von y (oder andersrum)
@@ -245,6 +248,12 @@ pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
                         remove_list.insert(i2);
                     }
                 }
+                if trigger{
+                    break
+                }
+            }
+            if trigger{
+                break
             }
         }
         //println!("Remove {:?}", remove_list);
