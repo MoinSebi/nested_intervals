@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 use std::collections::{HashSet, HashMap};
 use std::hash::Hash;
-use log::{debug, trace};
+use log::{debug, info, trace};
 
 
 /// Gives parent and child relation ship
@@ -68,7 +68,7 @@ pub fn fast_helper(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
     if (new.0 >= old.0) & (new.1 <= old.1){
         ss.push(old.clone());
     } else if hm.get(old).unwrap().parent.len() == 0 {
-        println!("nothing")
+        info!("nothing")
     } else {
         let parent = hm.get(old).unwrap().parent[0].clone();
         ss.append(& mut fast_helper(& parent, new, hm))
@@ -117,18 +117,18 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
                 hits.append(& mut solution.0);
                 overlaps.append(& mut solution.1);
 
-                //println!("HITS\t{:?}", hits);
-                //println!("OVERLAPS\t{:?}", overlaps);
+                //info!("HITS\t{:?}", hits);
+                //info!("OVERLAPS\t{:?}", overlaps);
             }
             if hits.len() == 0{
-                //println!("Nothing happening");
+                //info!("Nothing happening");
             }
             else if hits.len() == 1{
-                //println!("Only one");
+                //info!("Only one");
                 order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(hits[0]);
                 order.get_mut(&hits[0]).unwrap().child.push((start.clone(), end.clone()));
             } else {
-                //println!("We need to filter");
+                //info!("We need to filter");
                 filter_hit(& mut hits);
                 for x in hits{
                     order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(x);
@@ -145,12 +145,12 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
             open_intervals.push((start.clone(), end.clone()));
 
         }
-       //println!("OP {:?}", &open_intervals);
-        //println!("{:?}", order);
+       //info!("OP {:?}", &open_intervals);
+        //info!("{:?}", order);
 
     }
 
-    //println!("{:?}", order);
+    //info!("{:?}", order);
 }
 
 
@@ -196,7 +196,7 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
                 }
             }
         }
-        //println!("Remove {:?}", remove_list);
+        //info!("Remove {:?}", remove_list);
         trace!("Len remove_list {}", remove_list.len());
         trace!("Remove list {:?}", remove_list);
         let mut rml: Vec<usize> = remove_list.iter().cloned().collect();
@@ -256,7 +256,7 @@ pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
                 break
             }
         }
-        //println!("Remove {:?}", remove_list);
+        //info!("Remove {:?}", remove_list);
         for (i,x) in remove_list.iter().enumerate(){
             candicates.remove(x-i);
         }
@@ -285,7 +285,7 @@ pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
 ///     - You can check the same interval multiple times
 pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
     debug!("Running checker recusive");
-    //println!("Checking this interval {:?}", old);
+    //info!("Checking this interval {:?}", old);
     let mut hits: Vec<(u32, u32)> = Vec::new();
     let mut overlaps: Vec<(u32, u32)> = Vec::new();
 
@@ -308,9 +308,9 @@ pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
                 vecc_p.push(x.clone());
             }
             for x in vecc_p.iter() {
-                //println!("{:?}", x);
+                //info!("{:?}", x);
                 let jo = &mut checker_rec(x, new, hm, now_overlapping);
-                //println!("{:?}", jo);
+                //info!("{:?}", jo);
                 hits.append(&mut jo.0.clone());
                 overlaps.append(&mut jo.1.clone());
             }
@@ -343,7 +343,7 @@ pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
 ///     - You can check the same interval multiple times
 pub fn checker_rec2(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool, hs: & mut HashSet<(u32, u32)>) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
     debug!("Running checker recusive");
-    //println!("Checking this interval {:?}", old);
+    //info!("Checking this interval {:?}", old);
     let mut hits: Vec<(u32, u32)> = Vec::new();
     let mut overlaps: Vec<(u32, u32)> = Vec::new();
 
@@ -366,14 +366,13 @@ pub fn checker_rec2(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, 
                 vecc_p.push(x.clone());
             }
             for x in vecc_p.iter() {
-                eprintln!("hs2 {:?}", hs);
+                trace!("hs2 {:?}", hs);
                 if !hs.contains(x){
-                    eprintln!("hs {:?}", hs);
                     hs.insert(x.clone());
-                    eprintln!("hs {:?}", hs);
-                    //println!("{:?}", x);
+                    trace!("hs {:?}", hs);
+                    //info!("{:?}", x);
                     let jo = &mut checker_rec2(x, new, hm, now_overlapping, hs);
-                    //println!("{:?}", jo);
+                    //info!("{:?}", jo);
                     hits.append(&mut jo.0.clone());
                     overlaps.append(&mut jo.1.clone());
                 }
@@ -424,7 +423,7 @@ pub fn remove_duplicates(intervals: & mut Vec<(u32, u32)> ){
     let k2: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
     let mut uniques = HashSet::new();
     if ! (k2.len() == intervals.len()){
-        eprintln!("Removed duplicates");
+        info!("Removed duplicates");
         intervals.retain(|e| uniques.insert(*e));
     }
 
@@ -484,14 +483,22 @@ pub fn check_overlapping(intervals: &mut Vec<(u32, u32)>) -> bool{
 
 #[cfg(test)]
 mod tests {
+    use env_logger::Target;
+    use log::info;
     use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit, check_overlapping, make_nested_simple, get_parents, start_stop_check, start_stop_order};
 
 
+    #[macro_use]
+    fn init() {
+        env_logger::Builder::new().filter_level(log::LevelFilter::Info).try_init();
+    }
     // cargo test -- --nocapture
+
     #[test]
     fn basic() {
+        init();
         // We test remove and and general function
-        println!("\nRunning test 1");
+        info!("\nRunning test 1");
         //assert_eq!(2 + 2, 4);
         let i1: (u32, u32) = (1, 10);
         let i2: (u32, u32) = (2, 4);
@@ -514,13 +521,14 @@ mod tests {
         let mut network = create_network_hashmap(& intervals);
 
         make_nested(&intervals, & mut network);
-        println!("{:?}", network)
+        info!("{:?}", network)
 
 
     }
     #[test]
     fn hit_remover_testing(){
-        println!("Test Nr. 2 -- Removing shit");
+        init();
+        info!("Test Nr. 2 -- Removing shit");
         let i1: (u32, u32) = (1, 12);
         let i2: (u32, u32) = (10, 12);
         let i3: (u32, u32) = (1, 6);
@@ -532,14 +540,15 @@ mod tests {
         k.push(i3);
         k.push(i4);
         k.push(i5);
-        println!("{:?}", k);
+        info!("{:?}", k);
         filter_hit(& mut k);
-        println!("{:?}", k);
+        info!("{:?}", k);
         assert_eq!(k.len(), 2);
     }
 
     #[test]
     fn overlap_check(){
+        init();
         let i1: (u32, u32) = (1, 20);
         let i2: (u32, u32) = (1, 10);
         let i3: (u32, u32) = (7, 20);
@@ -554,16 +563,17 @@ mod tests {
 
         sort_vector(&mut k);
         let mut network = create_network_hashmap(& k);
-        println!("{:?}", k);
+        info!("{:?}", k);
         //make_nested(&k, & mut network);
         make_nested(&k, & mut network);
-        println!("{:?}", network);
+        info!("{:?}", network);
         let g = get_parents(&i2, &network);
-        println!("parents {:?}", g);
+        info!("parents {:?}", g);
     }
 
     #[test]
     fn overlap_check2(){
+        init();
         let i1: (u32, u32) = (1, 20);
         let i2: (u32, u32) = (1, 10);
         let i6: (u32, u32) = (2,6);
@@ -578,16 +588,17 @@ mod tests {
 
         sort_vector(&mut k);
         let mut network = create_network_hashmap(& k);
-        println!("{:?}", k);
+        info!("{:?}", k);
         //make_nested(&k, & mut network);
         make_nested(&k, & mut network);
-        println!("{:?}", network);
+        info!("{:?}", network);
         let g = get_parents(&i2, &network);
-        println!("parents {:?}", g);
+        info!("parents {:?}", g);
     }
 
     #[test]
     fn overlap_check3(){
+        init();
         let i1: (u32, u32) = (1, 20);
         let i2: (u32, u32) = (1, 10);
         let i6: (u32, u32) = (7,10);
@@ -602,17 +613,18 @@ mod tests {
 
         sort_vector(&mut k);
         let mut network = create_network_hashmap(& k);
-        println!("{:?}", k);
+        info!("{:?}", k);
         //make_nested(&k, & mut network);
         make_nested(&k, & mut network);
-        println!("{:?}", network);
+        info!("{:?}", network);
         let g = get_parents(&i2, &network);
-        println!("parents {:?}", g);
+        info!("parents {:?}", g);
     }
 
 
     #[test]
     fn check_fast(){
+        init();
         let i1: (u32, u32) = (1, 20);
         let i2: (u32, u32) = (1, 10);
         let i3: (u32, u32) = (9, 20);
@@ -644,14 +656,15 @@ mod tests {
 
 
         let mut network = create_network_hashmap(& k2);
-        println!("{:?}", k2);
+        info!("{:?}", k2);
         //make_nested(&k, & mut network);
         make_nested_simple(&k2, & mut network);
-        println!("{:?}", network);
+        info!("{:?}", network);
     }
 
     #[test]
     fn check_order() {
+        init();
         let i1: (u32, u32) = (1, 20);
         let i2: (u32, u32) = (10, 1);
         let i3: (u32, u32) = (9, 20);
