@@ -234,7 +234,7 @@ pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit");
     loop{
         let mut trigger = false;
-        let mut remove_list: u32;
+        let mut remove_list = HashSet::new();
         for (i1, x) in candicates.iter().enumerate(){
             for (i2, y) in candicates[i1+1..].iter().enumerate(){
                 // x is außerhalb von y (oder andersrum)
