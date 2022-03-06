@@ -172,42 +172,34 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 /// - Stuff is removed at the end, checking like everything
 /// - if true --> remove rerun
 /// PROBLEM:
-/// - remove list is not sorted
-/// --> Dont break and sort the list
-/// --> Break all the time and save what we have seen already
+/// - O(n^2) complexity
 pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
-    debug!("Running filter hit");
-    trace!("Number of candidates {}", candicates.len());
-    loop{
-        let mut trigger = false;
-        let mut remove_list: HashSet<usize> = HashSet::new();
-        for (i1, x) in candicates.iter().enumerate(){
-            for (i2, y) in candicates[i1+1..].iter().enumerate(){
-                // x is außerhalb von y (oder andersrum)
-                if (x.0<= y.0) == (x.1 >= y.1){
-                    trigger = true;
-                    // x is der parent
-                    if (x.0<= y.0) & (x.1 >= y.0){
-                        remove_list.insert(i1);
-                    // y ist der parent
-                    } else {
-                        remove_list.insert(i2+i1);
-                    }
+    debug!("Running filter hit - Number of candidates {}", candicates.len());
+    let mut trigger = false;
+    let mut remove_list: HashSet<usize> = HashSet::new();
+    for (i1, x) in candicates.iter().enumerate(){
+        for (i2, y) in candicates[i1+1..].iter().enumerate(){
+            // x is außerhalb von y (oder andersrum)
+            if (x.0<= y.0) == (x.1 >= y.1){
+                trigger = true;
+                // x is der parent
+                if (x.0<= y.0) & (x.1 >= y.0){
+                    remove_list.insert(i1);
+                // y ist der parent
+                } else {
+                    remove_list.insert(i2+i1);
                 }
             }
         }
-        //info!("Remove {:?}", remove_list);
-        trace!("Len remove_list {}", remove_list.len());
-        trace!("Remove list {:?}", remove_list);
-        let mut rml: Vec<usize> = remove_list.iter().cloned().collect();
-        rml.sort();
-        for (i,x) in rml.iter().enumerate(){
-            trace!("tt {}", x-i);
-            candicates.remove(x-i);
-        }
-        if !trigger{
-            break;
-        }
+    }
+    //info!("Remove {:?}", remove_list);
+    trace!("Len remove_list {}", remove_list.len());
+    trace!("Remove list {:?}", remove_list);
+    let mut rml: Vec<usize> = remove_list.iter().cloned().collect();
+    rml.sort();
+    for (i,x) in rml.iter().enumerate(){
+        trace!("tt {}", x-i);
+        candicates.remove(x-i);
     }
 
 }
@@ -232,34 +224,46 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
 /// - if true --> remove rerun
 pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit");
-    loop{
+    let mut cand_index: Vec<usize> = (0..candicates.len()).collect();
+    let mut detete = Vec::new();
+    loop {
         let mut trigger = false;
-        let mut remove_list = HashSet::new();
-        for (i1, x) in candicates.iter().enumerate(){
-            for (i2, y) in candicates[i1+1..].iter().enumerate(){
-                // x is außerhalb von y (oder andersrum)
-                if (x.0<= y.0) == (x.1 >= y.1){
+        let mut remove_list = Vec::new();
+        for i1 in cand_index.iter() {
+            let n1 = candicates[*i1];
+            for i2 in cand_index[i1 + 1..].iter() {
+                let n2 = candicates[*i2];
+                if (n1.0 <= n2.0) == (n1.1 >= n2.1) {
                     trigger = true;
-                    // x is der parent
-                    if (x.0<= y.0) & (x.1 >= y.0){
-                        remove_list.insert(i1);
-                        // y ist der parent
+                    if (n1.0 <= n2.0) & (n1.1 >= n1.0) {
+                        remove_list.push(i1.clone());
                     } else {
-                        remove_list.insert(i2);
+                        remove_list.push(i2.clone());
                     }
                 }
-                if trigger{
-                    break
+                if trigger {
+                    break;
                 }
             }
-            if trigger{
-                break
+
+            if trigger {
+                break;
             }
+            remove_list.push(i1.clone());
+
         }
-        //info!("Remove {:?}", remove_list);
-        for (i,x) in remove_list.iter().enumerate(){
-            candicates.remove(x-i);
+
+        for x in remove_list.iter(){
+            cand_index.remove(x.clone().clone());
+            detete.push(x.clone().clone());
         }
+        if !trigger{
+            break
+        }
+    }
+    detete.sort();
+    for (i, x) in detete.iter().enumerate(){
+        candicates.remove(x - i);
     }
 
 }
