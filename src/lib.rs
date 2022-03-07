@@ -132,8 +132,9 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
                 order.get_mut(&hits[0]).unwrap().child.push((start.clone(), end.clone()));
             } else {
                 //info!("We need to filter");
-                trace!("hi {:?}", hits);
+
                 trace!("hi2 {:?}", overlaps);
+                trace!("hi {:?}", hits);
                 trace!("hi3 {:?}", (start, end));
                 filter_hit(& mut hits);
                 for x in hits{
@@ -181,6 +182,9 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 /// - O(n^2) complexity
 pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit - Number of candidates {}", candicates.len());
+    let mut tt: HashSet<(u32, u32)> = candicates.iter().cloned().collect();
+    debug!("cann {}", tt.len());
+
     let mut trigger = false;
     let mut remove_list: HashSet<usize> = HashSet::new();
     for (i1, x) in candicates.iter().enumerate(){
