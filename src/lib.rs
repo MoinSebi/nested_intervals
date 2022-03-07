@@ -125,10 +125,16 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
             }
             else if hits.len() == 1{
                 //info!("Only one");
+                trace!("hi {:?}", hits);
+                trace!("hi2 {:?}", overlaps);
+                trace!("hi3 {:?}", (start, end));
                 order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(hits[0]);
                 order.get_mut(&hits[0]).unwrap().child.push((start.clone(), end.clone()));
             } else {
                 //info!("We need to filter");
+                trace!("hi {:?}", hits);
+                trace!("hi2 {:?}", overlaps);
+                trace!("hi3 {:?}", (start, end));
                 filter_hit(& mut hits);
                 for x in hits{
                     order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(x);
@@ -201,6 +207,7 @@ pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
         trace!("tt {}", x-i);
         candicates.remove(x-i);
     }
+    debug!("Running filter hit - Number of candidates {}", candicates.len());
 
 }
 
@@ -301,6 +308,7 @@ pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u
         hits.push((old.0.clone(), old.1.clone()));
     } else {
         if (!overlaps_parent) & (old.1 > new.0) {
+
             overlaps.push((old.0.clone(), old.1.clone()));
             now_overlapping = true;
         }
@@ -362,7 +370,6 @@ pub fn checker_rec2(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, 
             overlaps.push((old.0.clone(), old.1.clone()));
             now_overlapping = true;
         }
-
         if hm.get(old).unwrap().parent.len() != 0 {
             let mut vecc_p = Vec::new();
             for x in hm.get(old).unwrap().parent.iter() {
@@ -494,7 +501,7 @@ mod tests {
 
     #[macro_use]
     fn init() {
-        env_logger::Builder::new().filter_level(log::LevelFilter::Info).try_init();
+        env_logger::Builder::new().filter_level(log::LevelFilter::Trace).try_init();
     }
     // cargo test -- --nocapture
 
@@ -693,6 +700,35 @@ mod tests {
         assert_eq!(start_stop_check(&k2), false);
         start_stop_order(& mut k);
         assert_eq!(k[1], (1,10));
+
+    }
+
+    #[test]
+    fn filter1() {
+        init();
+        info!("dsajlkdjskaljdlkasdja");
+        let i1: (u32, u32) = (1, 20);
+        let i2: (u32, u32) = (10, 1);
+        let i3: (u32, u32) = (9, 20);
+        let i4: (u32, u32) = (11, 13);
+        let i5: (u32, u32) = (11, 12);
+        let i6: (u32, u32) = (11, 11);
+        let mut k: Vec<(u32, u32)> = Vec::new();
+        k.push(i1);
+        k.push(i2);
+        k.push(i3);
+        k.push(i4);
+        k.push(i5);
+
+        let mut k2: Vec<(u32, u32)> = Vec::new();
+        k2.push(i6);
+        k2.push(i2);
+        k2.push(i3);
+        k2.push(i4);
+        k2.push(i5);
+
+        filter_hit(& mut k);
+        info!("{:?}", k );
 
     }
 }
