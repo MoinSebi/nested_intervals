@@ -170,14 +170,13 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 ///     - candidates Vec<(u32, u32)>: List of intervals to check
 ///
 /// Output:
-///     -
+///     --> Chaneging candicates
 ///
 /// Running:
 ///     - Iterate over the list, check if the relation between the candidates
 ///
 /// TODO:
 /// - Stuff is removed at the end, checking like everything
-/// - if true --> remove rerun
 /// PROBLEM:
 /// - O(n^2) complexity
 pub fn filter_hit(candicates: &mut Vec<(u32, u32)>) {
@@ -277,62 +276,6 @@ pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
         candicates.remove(x - i);
     }
 
-}
-
-/// Recursive main function
-/// Input:
-///     - old: "old" interval
-///     - new: "new" interval
-///     - hm: main structure to change (needed for parents)
-///     - overlaps_parent: bool
-///
-/// Output:
-///     - (hit, overlap)
-///
-/// Running:
-///     1. Check if new interval is within the old one -> Hit and not overlap
-///     2. if not (no hit or interval):
-///         - if your parent is not overlapping and you overlap -> not interesting
-///         - rerun everything with the parent (recursive)
-///         - merge return
-///
-/// Problem:
-///     - You can check the same interval multiple times
-pub fn checker_rec(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
-    debug!("Running checker recusive");
-    //info!("Checking this interval {:?}", old);
-    let mut hits: Vec<(u32, u32)> = Vec::new();
-    let mut overlaps: Vec<(u32, u32)> = Vec::new();
-
-    let mut now_overlapping: bool = false;
-
-    // It is a hit!
-    if (old.0 <= new.0) & (old.1 >= new.1) {
-
-        hits.push((old.0.clone(), old.1.clone()));
-    } else {
-        if (!overlaps_parent) & (old.1 > new.0) {
-
-            overlaps.push((old.0.clone(), old.1.clone()));
-            now_overlapping = true;
-        }
-
-        if hm.get(old).unwrap().parent.len() != 0 {
-            let mut vecc_p = Vec::new();
-            for x in hm.get(old).unwrap().parent.iter() {
-                //u.append(&mut helper1(x, new, hm));
-                vecc_p.push(x.clone());
-            }
-            for x in vecc_p.iter() {
-                //info!("{:?}", x);
-                let jo = &mut checker_rec(x, new, hm, now_overlapping);
-                //info!("{:?}", jo);
-                hits.append(&mut jo.0.clone());
-                overlaps.append(&mut jo.1.clone());
-            }
-        }
-    }
-    (hits.clone(), overlaps.clone())
 }
 
 
