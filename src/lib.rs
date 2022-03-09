@@ -5,18 +5,18 @@ use log::{debug, info, trace};
 
 
 /// Gives parent and child relation ship
-#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Network{
-    pub parent: Vec<(u32, u32)>,
-    pub child: Vec<(u32, u32)>,
+    pub parent: HashSet<(u32, u32)>,
+    pub child: HashSet<(u32, u32)>,
 }
 
 
 impl Network{
     /// Create empty network
     pub fn new() -> Self{
-        let parent: Vec<(u32, u32)> = Vec::new();
-        let children: Vec<(u32, u32)> = Vec::new();
+        let parent: HashSet<(u32, u32)> = HashSet::new();
+        let children: HashSet<(u32, u32)> = HashSet::new();
         Self{
             parent: parent,
             child: children,
@@ -40,42 +40,42 @@ pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> Has
     hh
 }
 
-/// Faster way to make the nestedness
-///
-/// Still need parets
-pub fn make_nested_simple(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u32, u32), Network>){
-    let mut open_interval: (u32, u32) = (0,0);
-    for (start, end) in intervals_sorted.iter(){
-        if open_interval == (0,0){
-            open_interval = (start.clone(), end.clone());
+// /// Faster way to make the nestedness
+// ///
+// /// Still need parets
+// pub fn make_nested_simple(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u32, u32), Network>){
+//     let mut open_interval: (u32, u32) = (0,0);
+//     for (start, end) in intervals_sorted.iter(){
+//         if open_interval == (0,0){
+//             open_interval = (start.clone(), end.clone());
+//
+//         }
+//         else {
+//             let result = fast_helper(&open_interval, &(start.clone(), end.clone()), order);
+//             if result.len() == 1{
+//                 order.get_mut(&(start.clone(), end.clone())).unwrap().parent.insert(result[0]);
+//                 order.get_mut(&result[0]).unwrap().child.insert((start.clone(), end.clone()));
+//             }
+//             open_interval = (start.clone(), end.clone());
+//         }
+//     }
+// }
 
-        }
-        else {
-            let result = fast_helper(&open_interval, &(start.clone(), end.clone()), order);
-            if result.len() == 1{
-                order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(result[0]);
-                order.get_mut(&result[0]).unwrap().child.push((start.clone(), end.clone()));
-            }
-            open_interval = (start.clone(), end.clone());
-        }
-    }
-}
 
-
-/// Recuive function for
-pub fn fast_helper(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>) -> Vec<(u32, u32)>{
-    let mut ss: Vec<(u32, u32)> = Vec::new();
-    if (new.0 >= old.0) & (new.1 <= old.1){
-        ss.push(old.clone());
-    } else if hm.get(old).unwrap().parent.len() == 0 {
-        info!("nothing")
-    } else {
-        let parent = hm.get(old).unwrap().parent[0].clone();
-        ss.append(& mut fast_helper(& parent, new, hm))
-
-    }
-    ss
-}
+// /// Recuive function for
+// pub fn fast_helper(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>) -> Vec<(u32, u32)>{
+//     let mut ss: Vec<(u32, u32)> = Vec::new();
+//     if (new.0 >= old.0) & (new.1 <= old.1){
+//         ss.push(old.clone());
+//     } else if hm.get(old).unwrap().parent.len() == 0 {
+//         info!("nothing")
+//     } else {
+//         let parent = hm.get(old).unwrap().parent[0].clone();
+//         ss.append(& mut fast_helper(& parent, new, hm))
+//
+//     }
+//     ss
+// }
 
 
 /// Fill the graph structure
@@ -131,8 +131,8 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
                 trace!("hi3 {:?}", (start, end));
                 filter_hit(& mut hits);
                 for x in hits{
-                    order.get_mut(&(start.clone(), end.clone())).unwrap().parent.push(x);
-                    order.get_mut(&x).unwrap().child.push((start.clone(), end.clone()));
+                    order.get_mut(&(start.clone(), end.clone())).unwrap().parent.insert(x);
+                    order.get_mut(&x).unwrap().child.insert((start.clone(), end.clone()));
                 }
 
 
@@ -176,25 +176,29 @@ pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
     debug!("Running filter hit - Number of candidates {}", candicates.len());
     let mut tt: HashSet<(u32, u32)> = candicates.iter().cloned().collect();
     let mut tt2: Vec<(u32, u32)> = candicates.iter().cloned().collect();
-    debug!("cann {}", tt.len());
-
+    debug!("cann {}", tt2.len());
+    debug!("cann {:?}", tt2);
     let mut trigger = false;
     let mut remove_list: HashSet<usize> = HashSet::new();
     let mut remove_list2 = HashSet::new();
 
     for (i1, x) in tt2.iter().enumerate(){
         for (i2, y) in tt2[i1+1..].iter().enumerate(){
+            info!("{:?} {:?}", x,y);
             // x is außerhalb von y (oder andersrum)
-            if (x.0<= y.0) == (x.1 >= y.1){
+            // THIS IS NOT TRUE LOL
+            info!("{}", (x.0 <= y.0) == (x.1 >= y.1));
+            if ((x.0 <= y.0) == (x.1 >= y.1)) | ((x.0 >= y.0) == (x.1 <= y.1)){
+                info!("hit");
                 trigger = true;
                 // x is der parent
                 if (x.0<= y.0) & (x.1 >= y.0){
                     remove_list.insert(i1);
-                    remove_list2.insert(x);
+                    remove_list2.insert(x.clone());
                 // y ist der parent
                 } else {
                     remove_list.insert(i2+i1);
-                    remove_list2.insert(y);
+                    remove_list2.insert(y.clone());
                 }
             }
         }
@@ -202,8 +206,10 @@ pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
     //info!("Remove {:?}", remove_list);
     trace!("Len remove_list {}", remove_list.len());
     trace!("Remove list {:?}", remove_list);
-    let mut rml: Vec<&(u32, u32)> = remove_list2.iter().cloned().collect();
+    let mut rml: Vec<(u32, u32)> = remove_list2.iter().cloned().collect();
+    info!("rml {:?}", rml);
     rml.sort();
+    info!("rml {:?}", rml);
     for (i,x) in rml.iter().enumerate(){
         //trace!("tt {}", x-i);
         candicates.remove(x);
@@ -442,7 +448,7 @@ mod tests {
     use std::collections::HashSet;
     use env_logger::Target;
     use log::info;
-    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit, check_overlapping, make_nested_simple, get_parents, start_stop_check, start_stop_order};
+    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit, check_overlapping, get_parents, start_stop_check, start_stop_order};
 
 
     #[macro_use]
@@ -617,7 +623,6 @@ mod tests {
         let mut network = create_network_hashmap(& k2);
         info!("{:?}", k2);
         //make_nested(&k, & mut network);
-        make_nested_simple(&k2, & mut network);
         info!("{:?}", network);
     }
 
