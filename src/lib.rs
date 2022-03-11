@@ -31,10 +31,10 @@ pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> Has
     let mut hh: HashSet<(u32, u32)> = HashSet::new();
     if hm.get(start).unwrap().parent.len() != 0{
         let mut j: HashSet<(u32, u32)> = hm.get(start).unwrap().parent.iter().cloned().collect();
-        hh = hh.union(& mut j).cloned().collect();
+        hh.extend(& j);
         for x in hm.get(start).unwrap().parent.iter(){
             let mut o = get_parents(x, hm);
-            hh = hh.union(& mut o).cloned().collect();
+            hh.extend(& o);
         }
     }
     hh
@@ -114,8 +114,8 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
             for (oldstart, oldend) in open_intervals.iter(){
                 let mut hs = HashSet::new();
                 let mut solution = checker_rec2(&(oldstart.clone(), oldend.clone()), &(start.clone(), end.clone()), order, false, & mut hs);
-                hits.union(& mut solution.0);
-                overlaps.union(& mut solution.1);
+                hits.extend(& solution.0);
+                overlaps.extend(& solution.1);
 
                 //info!("HITS\t{:?}", hits);
                 //info!("OVERLAPS\t{:?}", overlaps);
@@ -188,19 +188,16 @@ pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
             // x is außerhalb von y (oder andersrum)
             // THIS IS NOT TRUE LOL
             info!("{}", (x.0 <= y.0) == (x.1 >= y.1));
-            if ((x.0 <= y.0) == (x.1 >= y.1)) | ((x.0 >= y.0) == (x.1 <= y.1)){
-                info!("hit");
+            if (x.0 <= y.0) & (x.1 >= y.1) {
+                remove_list.insert(i1);
+                remove_list2.insert(x.clone());
                 trigger = true;
                 // x is der parent
-                if (x.0<= y.0) & (x.1 >= y.0){
-                    remove_list.insert(i1);
-                    remove_list2.insert(x.clone());
-                // y ist der parent
-                } else {
-                    remove_list.insert(i2+i1);
-                    remove_list2.insert(y.clone());
-                }
+            } else if (x.0 >= y.0) & (x.1 <= y.1){
+                remove_list.insert(i2+i1);
+                remove_list2.insert(y.clone());
             }
+
         }
     }
     //info!("Remove {:?}", remove_list);
@@ -335,8 +332,8 @@ pub fn checker_rec2(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, 
                     //info!("{:?}", x);
                     let jo = &mut checker_rec2(x, new, hm, now_overlapping, hs);
                     //info!("{:?}", jo);
-                    hits.union(&mut jo.0.clone());
-                    overlaps.union(&mut jo.1.clone());
+                    hits.extend(& jo.0.clone());
+                    overlaps.extend(& jo.1.clone());
                 }
             }
         }
@@ -495,7 +492,7 @@ mod tests {
         let i1: (u32, u32) = (1, 12);
         let i2: (u32, u32) = (10, 12);
         let i3: (u32, u32) = (1, 6);
-        let i4: (u32, u32) = (1, 3);
+        let i4: (u32, u32) = (4, 10);
         let i5: (u32, u32) = (1, 2);
         let mut k: Vec<(u32, u32)> = Vec::new();
         k.push(i1);
@@ -508,7 +505,7 @@ mod tests {
         filter_hit(& mut kk);
 
         info!("{:?}", kk);
-        assert_eq!(kk.len(), 2);
+        assert_eq!(kk.len(), 3);
     }
 
     #[test]
