@@ -126,9 +126,9 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
             else {
                 //info!("We need to filter");
 
-                trace!("hi2 {:?}", overlaps);
-                trace!("hi {:?}", hits);
-                trace!("hi3 {:?}", (start, end));
+                trace!("Overlaps {:?}", overlaps);
+                trace!("Hits {:?}", hits);
+                trace!("Start + End {:?}", (start, end));
                 filter_hit(& mut hits);
                 for x in hits{
                     order.get_mut(&(start.clone(), end.clone())).unwrap().parent.insert(x);
@@ -176,18 +176,14 @@ pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
     debug!("Running filter hit - Number of candidates {}", candicates.len());
     let mut tt: HashSet<(u32, u32)> = candicates.iter().cloned().collect();
     let mut tt2: Vec<(u32, u32)> = candicates.iter().cloned().collect();
-    debug!("cann {}", tt2.len());
-    debug!("cann {:?}", tt2);
     let mut trigger = false;
     let mut remove_list: HashSet<usize> = HashSet::new();
     let mut remove_list2 = HashSet::new();
 
     for (i1, x) in tt2.iter().enumerate(){
         for (i2, y) in tt2[i1+1..].iter().enumerate(){
-            info!("{:?} {:?}", x,y);
             // x is außerhalb von y (oder andersrum)
             // THIS IS NOT TRUE LOL
-            info!("{}", (x.0 <= y.0) == (x.1 >= y.1));
             if (x.0 <= y.0) & (x.1 >= y.1) {
                 remove_list.insert(i1);
                 remove_list2.insert(x.clone());
@@ -201,12 +197,8 @@ pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
         }
     }
     //info!("Remove {:?}", remove_list);
-    trace!("Len remove_list {}", remove_list.len());
-    trace!("Remove list {:?}", remove_list);
     let mut rml: Vec<(u32, u32)> = remove_list2.iter().cloned().collect();
-    info!("rml {:?}", rml);
     rml.sort();
-    info!("rml {:?}", rml);
     for (i,x) in rml.iter().enumerate(){
         //trace!("tt {}", x-i);
         candicates.remove(x);
@@ -325,10 +317,8 @@ pub fn checker_rec2(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, 
                 vecc_p.push(x.clone());
             }
             for x in vecc_p.iter() {
-                trace!("hs2 {:?}", hs);
                 if !hs.contains(x){
                     hs.insert(x.clone());
-                    trace!("hs {:?}", hs);
                     //info!("{:?}", x);
                     let jo = &mut checker_rec2(x, new, hm, now_overlapping, hs);
                     //info!("{:?}", jo);
