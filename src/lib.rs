@@ -93,7 +93,7 @@ pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> Has
 /// Check:
 ///     - checker_rev
 pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u32, u32), Network>){
-    debug!("Running nested");
+    trace!("Running nested");
     let mut open_intervals: Vec<(u32, u32)> = Vec::new();
     
     // Iterate over sorted unique interval vector 
@@ -173,37 +173,30 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 /// PROBLEM:
 /// - O(n^2) complexity
 pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
-    debug!("Running filter hit - Number of candidates {}", candicates.len());
-    let mut tt: HashSet<(u32, u32)> = candicates.iter().cloned().collect();
+    trace!("Running filter hit - Number of candidates {}", candicates.len());
     let mut tt2: Vec<(u32, u32)> = candicates.iter().cloned().collect();
-    let mut trigger = false;
-    let mut remove_list: HashSet<usize> = HashSet::new();
-    let mut remove_list2 = HashSet::new();
+
+    let mut remove_hashset = HashSet::new();
 
     for (i1, x) in tt2.iter().enumerate(){
         for (i2, y) in tt2[i1+1..].iter().enumerate(){
             // x is außerhalb von y (oder andersrum)
             // THIS IS NOT TRUE LOL
             if (x.0 <= y.0) & (x.1 >= y.1) {
-                remove_list.insert(i1);
-                remove_list2.insert(x.clone());
-                trigger = true;
+                remove_hashset.insert(x.clone());
                 // x is der parent
             } else if (x.0 >= y.0) & (x.1 <= y.1){
-                remove_list.insert(i2+i1);
-                remove_list2.insert(y.clone());
+                remove_hashset.insert(y.clone());
             }
 
         }
     }
     //info!("Remove {:?}", remove_list);
-    let mut rml: Vec<(u32, u32)> = remove_list2.iter().cloned().collect();
-    rml.sort();
-    for (i,x) in rml.iter().enumerate(){
+    for (i,x) in remove_hashset.iter().enumerate(){
         //trace!("tt {}", x-i);
         candicates.remove(x);
     }
-    debug!("Running filter hit - Number of candidates {}", tt2.len());
+    trace!("Running filter hit - Number of candidates {}", candicates.len());
 
 }
 
