@@ -1,6 +1,5 @@
 use std::iter::FromIterator;
 use std::collections::{HashSet, HashMap};
-use std::hash::Hash;
 use log::{debug, info, trace};
 
 
@@ -30,10 +29,10 @@ impl Network{
 pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> HashSet<(u32, u32)>{
     let mut hh: HashSet<(u32, u32)> = HashSet::new();
     if hm.get(start).unwrap().parent.len() != 0{
-        let mut j: HashSet<(u32, u32)> = hm.get(start).unwrap().parent.iter().cloned().collect();
+        let j: HashSet<(u32, u32)> = hm.get(start).unwrap().parent.iter().cloned().collect();
         hh.extend(& j);
         for x in hm.get(start).unwrap().parent.iter(){
-            let mut o = get_parents(x, hm);
+            let o = get_parents(x, hm);
             hh.extend(& o);
         }
     }
@@ -113,7 +112,7 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
             // For each interval: Start checking, when and if hit or overlap
             for (oldstart, oldend) in open_intervals.iter(){
                 let mut hs = HashSet::new();
-                let mut solution = checker_rec2(&(oldstart.clone(), oldend.clone()), &(start.clone(), end.clone()), order, false, & mut hs);
+                let solution = checker_rec2(&(oldstart.clone(), oldend.clone()), &(start.clone(), end.clone()), order, false, & mut hs);
                 hits.extend(& solution.0);
                 overlaps.extend(& solution.1);
 
@@ -172,14 +171,14 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 /// - Stuff is removed at the end, checking like everything
 /// PROBLEM:
 /// - O(n^2) complexity
-pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
-    trace!("Running filter hit - Number of candidates {}", candicates.len());
-    let mut tt2: Vec<(u32, u32)> = candicates.iter().cloned().collect();
+pub fn filter_hit(candidates: &mut HashSet<(u32, u32)>) {
+    trace!("Running filter hit - Number of candidates {}", candidates.len());
+    let cand_vector: Vec<(u32, u32)> = candidates.iter().cloned().collect();
 
     let mut remove_hashset = HashSet::new();
 
-    for (i1, x) in tt2.iter().enumerate(){
-        for (i2, y) in tt2[i1+1..].iter().enumerate(){
+    for (i1, x) in cand_vector.iter().enumerate(){
+        for y in cand_vector[i1+1..].iter(){
             // x is außerhalb von y (oder andersrum)
             // THIS IS NOT TRUE LOL
             if (x.0 <= y.0) & (x.1 >= y.1) {
@@ -192,11 +191,11 @@ pub fn filter_hit(candicates: &mut HashSet<(u32, u32)>) {
         }
     }
     //info!("Remove {:?}", remove_list);
-    for (i,x) in remove_hashset.iter().enumerate(){
+    for x in remove_hashset.iter(){
         //trace!("tt {}", x-i);
-        candicates.remove(x);
+        candidates.remove(x);
     }
-    trace!("Running filter hit - Number of candidates {}", candicates.len());
+    trace!("Running filter hit - Number of candidates {}", candidates.len());
 
 }
 
@@ -426,14 +425,12 @@ pub fn check_overlapping(intervals: &mut Vec<(u32, u32)>) -> bool{
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-    use env_logger::Target;
     use log::info;
-    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit, check_overlapping, get_parents, start_stop_check, start_stop_order};
+    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit};
 
 
-    #[macro_use]
     fn init() {
-        env_logger::Builder::new().filter_level(log::LevelFilter::Trace).try_init();
+        env_logger::Builder::new().filter_level(log::LevelFilter::Trace).try_init().err();
     }
     // cargo test -- --nocapture
 
@@ -461,7 +458,7 @@ mod tests {
     fn filter1(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20)];
+        let intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20)];
         let mut ii: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
         filter_hit(& mut ii);
 
@@ -473,7 +470,7 @@ mod tests {
     fn filter2(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (1,2), (1,20)];
+        let intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (1,2), (1,20)];
         let mut ii: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
         filter_hit(& mut ii);
 
