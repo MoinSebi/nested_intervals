@@ -444,29 +444,18 @@ mod tests {
     }
     // cargo test -- --nocapture
 
+
+
     #[test]
     fn basic() {
         init();
         // We test remove and and general function
         info!("\nRunning test 1");
         //assert_eq!(2 + 2, 4);
-        let i1: (u32, u32) = (1, 10);
-        let i2: (u32, u32) = (2, 4);
-        let i3: (u32, u32) = (7,9);
-        let i4: (u32, u32) = (7,9);
-        let i5: (u32, u32) = (8,9);
 
-        let mut intervals: Vec<(u32, u32)> = Vec::new();
-
-
-        intervals.push(i1);
-        intervals.push(i2);
-        intervals.push(i3);
-        intervals.push(i4);
-        intervals.push(i5);
-
+        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (7,9), (8,9), (1,20)];
         remove_duplicates(&mut intervals);
-        assert_eq!(intervals.len(), 4);
+        assert_eq!(intervals.len(), 5);
         sort_vector(&mut intervals);
         let mut network = create_network_hashmap(& intervals);
 
@@ -476,200 +465,28 @@ mod tests {
 
     }
     #[test]
-    fn hit_remover_testing(){
+    fn filter1(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let i1: (u32, u32) = (1, 12);
-        let i2: (u32, u32) = (10, 12);
-        let i3: (u32, u32) = (1, 6);
-        let i4: (u32, u32) = (4, 10);
-        let i5: (u32, u32) = (1, 2);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i3);
-        k.push(i4);
-        k.push(i5);
-        info!("{:?}", k);
-        let mut kk: HashSet<(u32, u32)> = k.iter().cloned().collect();
-        filter_hit(& mut kk);
+        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20)];
+        let mut ii: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
+        filter_hit(& mut ii);
 
-        info!("{:?}", kk);
-        assert_eq!(kk.len(), 3);
+        info!("{:?}", ii);
+        assert_eq!(ii.len(), 2);
     }
 
     #[test]
-    fn overlap_check(){
+    fn filter2(){
         init();
-        let i1: (u32, u32) = (1, 20);
-        let i2: (u32, u32) = (1, 10);
-        let i3: (u32, u32) = (7, 20);
-        let i4: (u32, u32) = (11, 13);
-        let i5: (u32, u32) = (8,9);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i3);
-        k.push(i4);
-        k.push(i5);
+        info!("Test Nr. 2 -- Removing shit");
+        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (1,2), (1,20)];
+        let mut ii: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
+        filter_hit(& mut ii);
 
-        sort_vector(&mut k);
-        let mut network = create_network_hashmap(& k);
-        info!("{:?}", k);
-        //make_nested(&k, & mut network);
-        make_nested(&k, & mut network);
-        info!("{:?}", network);
-        let g = get_parents(&i2, &network);
-        info!("parents {:?}", g);
-    }
-
-    #[test]
-    fn overlap_check2(){
-        init();
-        let i1: (u32, u32) = (1, 20);
-        let i2: (u32, u32) = (1, 10);
-        let i6: (u32, u32) = (2,6);
-        let i4: (u32, u32) = (3,4);
-        let i5: (u32, u32) = (11,12);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i4);
-        k.push(i5);
-        k.push(i6);
-
-        sort_vector(&mut k);
-        let mut network = create_network_hashmap(& k);
-        info!("{:?}", k);
-        //make_nested(&k, & mut network);
-        make_nested(&k, & mut network);
-        info!("{:?}", network);
-        let g = get_parents(&i2, &network);
-        info!("parents {:?}", g);
-    }
-
-    #[test]
-    fn overlap_check3(){
-        init();
-        let i1: (u32, u32) = (1, 20);
-        let i2: (u32, u32) = (1, 10);
-        let i6: (u32, u32) = (7,10);
-        let i4: (u32, u32) = (9,15);
-        let i5: (u32, u32) = (11,12);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i4);
-        k.push(i5);
-        k.push(i6);
-
-        sort_vector(&mut k);
-        let mut network = create_network_hashmap(& k);
-        info!("{:?}", k);
-        //make_nested(&k, & mut network);
-        make_nested(&k, & mut network);
-        info!("{:?}", network);
-        let g = get_parents(&i2, &network);
-        info!("parents {:?}", g);
+        info!("{:?}", ii);
+        assert_eq!(ii.len(), 3);
     }
 
 
-    #[test]
-    fn check_fast(){
-        init();
-        let i1: (u32, u32) = (1, 20);
-        let i2: (u32, u32) = (1, 10);
-        let i3: (u32, u32) = (9, 20);
-        let i4: (u32, u32) = (11, 13);
-        let i5: (u32, u32) = (11,12);
-        let i6: (u32, u32) = (11,11);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i3);
-        k.push(i4);
-        k.push(i5);
-
-
-        let mut k2: Vec<(u32, u32)> = Vec::new();
-        k2.push(i1);
-        k2.push(i2);
-        k2.push(i4);
-        k2.push(i5);
-        k2.push(i6);
-
-
-
-
-        let k10 = check_overlapping(& mut k);
-        let k11 = check_overlapping(& mut k2);
-        assert_eq!(k10, true);
-        assert_eq!(k11, false);
-
-
-        let mut network = create_network_hashmap(& k2);
-        info!("{:?}", k2);
-        //make_nested(&k, & mut network);
-        info!("{:?}", network);
-    }
-
-    #[test]
-    fn check_order() {
-        init();
-        let i1: (u32, u32) = (1, 20);
-        let i2: (u32, u32) = (10, 1);
-        let i3: (u32, u32) = (9, 20);
-        let i4: (u32, u32) = (11, 13);
-        let i5: (u32, u32) = (11, 12);
-        let i6: (u32, u32) = (11, 11);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i3);
-        k.push(i4);
-        k.push(i5);
-
-        let mut k2: Vec<(u32, u32)> = Vec::new();
-        k2.push(i6);
-        k2.push(i2);
-        k2.push(i3);
-        k2.push(i4);
-        k2.push(i5);
-
-        assert_eq!(start_stop_check(&k), false);
-        assert_eq!(start_stop_check(&k2), false);
-        start_stop_order(& mut k);
-        assert_eq!(k[1], (1,10));
-
-    }
-
-    #[test]
-    fn filter1() {
-        init();
-        info!("dsajlkdjskaljdlkasdja");
-        let i1: (u32, u32) = (1, 20);
-        let i2: (u32, u32) = (10, 1);
-        let i3: (u32, u32) = (9, 20);
-        let i4: (u32, u32) = (11, 13);
-        let i5: (u32, u32) = (11, 12);
-        let i6: (u32, u32) = (11, 11);
-        let mut k: Vec<(u32, u32)> = Vec::new();
-        k.push(i1);
-        k.push(i2);
-        k.push(i3);
-        k.push(i4);
-        k.push(i5);
-
-        let mut k2: Vec<(u32, u32)> = Vec::new();
-        k2.push(i6);
-        k2.push(i2);
-        k2.push(i3);
-        k2.push(i4);
-        k2.push(i5);
-        let mut kk: HashSet<(u32, u32)> = k.iter().cloned().collect();
-
-        filter_hit(& mut kk);
-        info!("{:?}", k );
-
-    }
 }
