@@ -1,5 +1,5 @@
 use std::iter::FromIterator;
-use std::collections::{HashSet, HashMap};
+use hashbrown::{HashSet, HashMap};
 use log::{debug, info, trace};
 
 
@@ -424,7 +424,7 @@ pub fn check_overlapping(intervals: &mut Vec<(u32, u32)>) -> bool{
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
+    use hashbrown::HashSet;
     use log::info;
     use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit};
 
