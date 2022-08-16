@@ -221,10 +221,10 @@ pub fn filter_hit(candidates: &mut HashSet<(u32, u32)>) {
 pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
     debug!("Running filter hit");
     let mut cand_index: Vec<usize> = (0..candicates.len()).collect();
-    let mut detete = Vec::new();
+    let mut detete = SmallVec::<[usize; 10]>::new();
     loop {
         let mut trigger = false;
-        let mut remove_list = Vec::new();
+        let mut remove_list = SmallVec::<[usize; 10]>::new();
         for i1 in cand_index.iter() {
             let n1 = candicates[*i1];
             for i2 in cand_index[i1 + 1..].iter() {
