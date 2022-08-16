@@ -202,68 +202,6 @@ pub fn filter_hit(candidates: &mut HashSet<(u32, u32)>) {
 }
 
 
-/// In a list of intervals, check if some are related to each other (very slow)
-/// Complexity: O(n^2)
-/// Input:
-///     - candidates Vec<(u32, u32)>: List of intervals to check
-///
-/// Mut:
-///     - candidates Vec<(u32, u32)>: List of intervals to check
-///
-/// Output:
-///     -
-///
-/// Running:
-///     - Iterate over the list, check if the relation between the candidates
-///
-/// TODO:
-/// - Stuff is removed at the end, checking like everything
-/// - if true --> remove rerun
-pub fn filter_hit2(candicates: &mut Vec<(u32, u32)>) {
-    debug!("Running filter hit");
-    let mut cand_index: Vec<usize> = (0..candicates.len()).collect();
-    let mut detete = SmallVec::<[usize; 10]>::new();
-    loop {
-        let mut trigger = false;
-        let mut remove_list = SmallVec::<[usize; 10]>::new();
-        for i1 in cand_index.iter() {
-            let n1 = candicates[*i1];
-            for i2 in cand_index[i1 + 1..].iter() {
-                let n2 = candicates[*i2];
-                if (n1.0 <= n2.0) == (n1.1 >= n2.1) {
-                    trigger = true;
-                    if (n1.0 <= n2.0) & (n1.1 >= n1.0) {
-                        remove_list.push(i1.clone());
-                    } else {
-                        remove_list.push(i2.clone());
-                    }
-                }
-                if trigger {
-                    break;
-                }
-            }
-
-            if trigger {
-                break;
-            }
-            remove_list.push(i1.clone());
-
-        }
-
-        for x in remove_list.iter(){
-            cand_index.remove(x.clone().clone());
-            detete.push(x.clone().clone());
-        }
-        if !trigger{
-            break
-        }
-    }
-    detete.sort();
-    for (i, x) in detete.iter().enumerate(){
-        candicates.remove(x - i);
-    }
-
-}
 
 
 
