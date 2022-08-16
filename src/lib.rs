@@ -4,6 +4,7 @@ use log::{debug, info, trace};
 use smallvec::SmallVec;
 
 
+
 /// Gives parent and child relation ship
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Network{
@@ -478,6 +479,5 @@ mod tests {
         info!("{:?}", ii);
         assert_eq!(ii.len(), 3);
     }
-
 
 }
