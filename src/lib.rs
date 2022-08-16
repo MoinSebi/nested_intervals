@@ -1,6 +1,7 @@
 use std::iter::FromIterator;
 use hashbrown::{HashSet, HashMap};
 use log::{debug, info, trace};
+use smallvec::SmallVec;
 
 
 /// Gives parent and child relation ship
@@ -93,7 +94,7 @@ pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> Has
 ///     - checker_rev
 pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u32, u32), Network>){
     trace!("Running nested");
-    let mut open_intervals: Vec<(u32, u32)> = Vec::new();
+    let mut open_intervals = SmallVec::<[(u32, u32); 20]>::new();
     
     // Iterate over sorted unique interval vector 
     for (start, end) in intervals_sorted.iter(){
@@ -137,7 +138,7 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, order: & mut HashMap<(u3
 
             }
 
-            open_intervals =  Vec::new();
+            open_intervals =  SmallVec::<[(u32, u32); 20]>::new();
             for x in overlaps.iter() {
                 open_intervals.push(x.clone());
             }
