@@ -6,10 +6,10 @@ use related_intervals::{create_network_hashmap, filter_hit, get_parents, make_ne
 
 fn makehs() -> Vec<(u32, u32)>{
     let mut o = Vec::new();
+    o.push((0,10000));
     for x in 1..100{
         o.push((x+1, x+10))
     }
-    let mut ii: HashSet<(u32, u32)> = o.iter().cloned().collect();
     return o
 
 }
