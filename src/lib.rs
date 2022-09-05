@@ -379,26 +379,49 @@ mod tests {
 
 
     }
+
     #[test]
-    fn filter1(){
+    /// Normal run
+    fn run1(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20)];
-        let mut ii: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
+        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20)];
+        sort_vector(&mut intervals);
+        let mut network = create_network_hashmap(& intervals);
+        make_nested(&intervals, & mut network);
 
-        info!("{:?}", ii);
-        assert_eq!(ii.len(), 2);
+        info!("dsad a{:?}", intervals.len());
+        assert_eq!(intervals.len(), 5);
+    }
+
+
+    #[test]
+    /// Normal run
+    fn run2(){
+        init();
+        info!("Test Nr. 2 -- Removing shit");
+        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (5,20)];
+        sort_vector(&mut intervals);
+        let mut network = create_network_hashmap(& intervals);
+        make_nested(&intervals, & mut network);
+
+        info!("dsad a{:?}", network);
+        assert_eq!(intervals.len(), 5);
     }
 
     #[test]
-    fn filter2(){
+    /// Normal run
+    fn run3(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (1,2), (1,20)];
-        let mut ii: HashSet<(u32, u32)> = intervals.iter().cloned().collect();
+        let mut intervals: Vec<(u32, u32)> = vec![(1,15), (8,12), (6,10), (7,12), (5,20)];
+        sort_vector(&mut intervals);
+        let mut network = create_network_hashmap(& intervals);
+        make_nested(&intervals, & mut network);
 
-        info!("{:?}", ii);
-        assert_eq!(ii.len(), 3);
+        info!("dsad a{:?}", network);
+        assert_eq!(intervals.len(), 5);
     }
+
 
 }
