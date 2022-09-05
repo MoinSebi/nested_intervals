@@ -121,7 +121,8 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, network: & mut HashMap<(
 
 
                 filter_hit(& mut hits);
-                for x in hits{
+                let hs: HashSet<(u32, u32)> = hits.into_iter().collect();
+                for x in hs{
                     network.get_mut(&(*start, *end)).unwrap().parent.insert(x);
                 }
 
