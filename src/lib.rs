@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 use hashbrown::{HashSet, HashMap};
-use log::{debug, info, trace};
+use log::{info};
 use smallvec::SmallVec;
 
 
@@ -91,7 +91,6 @@ pub fn get_parents(start: &(u32, u32), hm: &HashMap<(u32, u32), Network>) -> Has
 /// Check:
 ///     - checker_rev
 pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, network: & mut HashMap<(u32, u32), Network>){
-    trace!("Running nested");
     let mut open_intervals = SmallVec::<[(u32, u32); 20]>::new();
     
     // Iterate over sorted unique interval vector
@@ -165,7 +164,6 @@ pub fn make_nested(intervals_sorted: & Vec<(u32, u32)>, network: & mut HashMap<(
 /// PROBLEM:
 /// - O(n^2) complexity
 pub fn filter_hit(candidates: &mut SmallVec<[(u32, u32); 20]>) {
-    trace!("Running filter hit - Number of candidates {}", candidates.len());
     let cand_vector: Vec<(u32, u32)> = candidates.iter().cloned().collect();
     for (i1, x) in cand_vector.iter().enumerate(){
         for y in cand_vector[i1+1..].iter(){
@@ -183,7 +181,6 @@ pub fn filter_hit(candidates: &mut SmallVec<[(u32, u32); 20]>) {
         }
     }
 
-    trace!("Running filter hit - Number of candidates {}", candidates.len());
 
 }
 
@@ -212,7 +209,6 @@ pub fn filter_hit(candidates: &mut SmallVec<[(u32, u32); 20]>) {
 /// Problem:
 ///     - You can check the same interval multiple times
 pub fn checker_recursive(old: &(u32, u32), new: &(u32, u32), hm: & mut HashMap<(u32, u32), Network>, overlaps_parent: bool, hs: & mut Vec<(u32, u32)>) -> (Vec<(u32, u32)>, Vec<(u32, u32)>) {
-    debug!("Running checker recusive");
     let mut hits: Vec<(u32, u32)> = Vec::new();
     let mut overlaps: Vec<(u32, u32)> = Vec::new();
 
@@ -350,9 +346,8 @@ pub fn check_overlapping(intervals: &mut Vec<(u32, u32)>) -> bool{
 
 #[cfg(test)]
 mod tests {
-    use hashbrown::HashSet;
     use log::info;
-    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates, filter_hit};
+    use crate::{sort_vector, make_nested, create_network_hashmap, remove_duplicates};
 
 
     fn init() {
@@ -376,38 +371,39 @@ mod tests {
         let mut network = create_network_hashmap(& intervals);
 
         make_nested(&intervals, & mut network);
-        info!("{:?}", network)
+        info!("{:?}", network);
+        info!("");
 
 
     }
 
     #[test]
-    /// Normal run
+    /// Overlap
     fn run1(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20)];
+        let mut intervals: Vec<(u32, u32)> = vec![(1,20), (5,30)];
         sort_vector(&mut intervals);
         let mut network = create_network_hashmap(& intervals);
         make_nested(&intervals, & mut network);
 
-        info!("dsad a{:?}", intervals.len());
-        assert_eq!(intervals.len(), 5);
+        assert_eq!(network.len(), 2);
+        assert_eq!(intervals.len(), 2);
     }
 
 
     #[test]
-    /// Normal run
+    /// double hit
     fn run2(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (5,20)];
+        let mut intervals: Vec<(u32, u32)> = vec![(1,20), (10,30), (12,18)];
         sort_vector(&mut intervals);
         let mut network = create_network_hashmap(& intervals);
         make_nested(&intervals, & mut network);
 
-        info!("dsad a{:?}", network);
-        assert_eq!(intervals.len(), 5);
+        info!("run2{:?}", network);
+        assert_eq!(intervals.len(), 3);
     }
 
     #[test]
@@ -415,13 +411,27 @@ mod tests {
     fn run3(){
         init();
         info!("Test Nr. 2 -- Removing shit");
-        let mut intervals: Vec<(u32, u32)> = vec![(1,15), (8,12), (6,10), (7,12), (5,20)];
+        let mut intervals: Vec<(u32, u32)> = vec![(1,20), (10,30), (8,15)];
         sort_vector(&mut intervals);
         let mut network = create_network_hashmap(& intervals);
         make_nested(&intervals, & mut network);
 
-        info!("dsad a{:?}", network);
-        assert_eq!(intervals.len(), 5);
+        info!("run3 {:?}", network);
+        assert_eq!(intervals.len(), 3);
+    }
+
+    #[test]
+    /// Normal run
+    fn run4(){
+        init();
+        info!("Test Nr. 2 -- Removing shit");
+        let mut intervals: Vec<(u32, u32)> = vec![(1,20), (10,30), (8,25), (0,40)];
+        sort_vector(&mut intervals);
+        let mut network = create_network_hashmap(& intervals);
+        make_nested(&intervals, & mut network);
+
+        info!("run4 {:?}", network);
+        assert_eq!(intervals.len(), 4);
     }
 
 

@@ -1,4 +1,3 @@
-use hashbrown::{HashSet};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use related_intervals::{create_network_hashmap, filter_hit, get_parents, make_nested, sort_vector};
 
