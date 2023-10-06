@@ -1,43 +1,83 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use related_intervals::{create_network_hashmap, filter_hit, make_nested, make_nested2, sort_vector};
+use related_intervals::{make_nested2, make_nested22, sort_vector};
 
 use std::cmp::Ordering;
 
 
-
+/// Create a vector of tuples
+/// These are in order
 fn creat_hashset() -> Vec<(u32, u32)>{
-    let mut o = Vec::new();
-    o.push((0,1000000));
-    for x in 1..10000{
-        o.push((x+1, x+2))
+    let mut vector = Vec::new();
+    //vector.push((0, 1000000));
+    for value in 1..10000{
+        vector.push((value +1, value +2))
     }
-    return o
+    return vector
+
+}
+
+
+/// Create a vector of tuples
+/// These are in order
+fn creat_hashset2() -> Vec<[u32; 2]>{
+    let mut vector = Vec::new();
+    //vector.push((0, 1000000));
+    for value in 1..10000{
+        if value % 500 == 0{
+            vector.push([value +1, value +2000]);
+        } else if value % 200 == 0{
+            vector.push([value +1, value +500]);
+
+        }
+
+        else {
+            vector.push([value +1, value +2]);
+
+        }
+    }
+    sort_vector2(&mut vector);
+    return vector
+
+}
+
+/// Interval vector sorting
+pub fn sort_vector2(intervals: &mut Vec<[u32; 2]>){
+    intervals.sort_by(|a, b| (a[0].cmp(&b[0]).then(b[1].cmp(&a[1]))));
 
 }
 
 
 
 
-fn test(){
-    let mut intervals = creat_hashset();
-    //sort_vector(&mut intervals);
-    let mut network = create_network_hashmap(& intervals);
 
-    make_nested(&intervals, & mut network);
-}
 
+/// Run the new function
 fn testt(){
-    let mut intervals = creat_hashset();
+    let mut intervals = creat_hashset2();
     //sort_vector(&mut intervals);
     let mut network = make_nested2(&intervals);
 }
+
+//
+//
+// /// Run the new function
+// fn testt2(){
+//     let mut intervals = creat_hashset2();
+//     //sort_vector(&mut intervals);
+//     let mut network = make_nested22(&intervals);
+// }
 
 
 
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("faster network", |b| b.iter(|| test()));
+
+
+
+
+    //c.bench_function("faster network", |b| b.iter(|| test()));
     c.bench_function("faster network", |b| b.iter(|| testt()));
+    // c.bench_function("faster network", |b| b.iter(|| testt2()));
 
 
 }
