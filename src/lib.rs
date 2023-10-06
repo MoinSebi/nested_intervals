@@ -6,113 +6,59 @@ use log::{info};
 use smallvec::SmallVec;
 
 
-//--------------------------------OLD--------------------------------------------
-
-
-
-
-
-
-
-
-
-
-/// Interval vector sorting
-pub fn sort_vector(intervals: &mut Vec<(u32, u32)>){
-    intervals.sort_by(|a, b| (a.0.cmp(&b.0).then(b.1.cmp(&a.1))));
-
-}
-
-
-
-//--------------------------------------NEW---------------------------------------------------------------
-
-
 /// Create which intervals are overlapping
 /// Input:
 /// - intervals_sorted: & Vec<(u32, u32)>
 /// Output:
 /// - Vec(Tuple to tuple)
-pub fn make_nested2<'a, 'b>(intervals_sorted: &'a Vec<[u32; 2]>) -> Vec<(&[u32; 2], &[u32; 2])>{
+pub fn make_nested<'a, 'b>(intervals_sorted: &'a Vec<[u32; 3]>) -> Vec<(u32, u32)>{
     //info!("dasjkdjada");
     //let mut itervals = Vec::with_capacity(intervals_sorted.len());
-    let mut open_intervals: BinaryHeap<Reverse<&[u32; 2]>> = BinaryHeap::new();
-
-    // The result vector
+    let mut open_intervals: Vec<&[u32; 3]> = Vec::new();
     let mut result = Vec::with_capacity(intervals_sorted.len());
     // Iterate over sorted unique interval vector
+    let mut d = Vec::new();
     for tuple1 in intervals_sorted.iter() {
-        // Remove tuples which have a smaller end then the start of the new tuple
-        open_intervals.retain(|a| tuple1[0] < a.0[1]);
+        open_intervals.retain(|a| tuple1[0] < a[1]);
 
-        // If empty (just at the start), add to open-intervals
-        if !open_intervals.is_empty() {
-
-            // Sort the open intervals by start and end
+        // If empty (just at the start), add to openintervals
+        if open_intervals.len() != 0 {
+            open_intervals.sort_by_key(|a| (Reverse(a[0]), a[1]));
 
 
-            // Get those that have bigger end than the one you are looking at
-            for interval in open_intervals.iter(){
-                if interval.0[1] >= tuple1[1] - 1{
-                    result.push((tuple1, interval.0));
-                } else {
-                    break
+
+            if let Some(index) = open_intervals.iter().position(|a| a[1] >= tuple1[1]){
+                let mut smallest = &open_intervals.get(index).unwrap()[1];
+                result.push((tuple1[2], open_intervals.get(index).unwrap()[2]));
+                d = open_intervals.iter().filter(|a| smallest >  &a[1]).collect();
+                //println!("{:?}", d);
+                // println!("{:?}", open_intervals);
+                // println!("{:?}", smallest);
+                // println!("{:?}\n", tuple1);
+                for x in open_intervals.iter() {
+                    if &x[1] < smallest && x[1] > tuple1[1] {
+                        smallest = &x[1];
+                        result.push((tuple1[2], x[2]));
+                    }
                 }
             }
-
-            // println!("open {:?}", open_intervals);
-            // println!("tuple {:?}", tuple1);
-            // println!("result {:?}\n", result);
         }
-        open_intervals.push(Reverse(tuple1));
-
+        open_intervals.push(tuple1);
     }
     result.shrink_to_fit();
     return result
 }
 
+//-----------------Helper----------------------------------------------------------------------
 
-/// Create which intervals are overlapping
-/// Input:
-/// - intervals_sorted: & Vec<(u32, u32)>
-/// Output:
-/// - Vec(Tuple to tuple)
-pub fn make_nested22<'a, 'b>(intervals_sorted: &'a Vec<(u32, u32)>) -> HashMap<&(u32, u32), Vec<&(u32, u32)>>{
-    //info!("dasjkdjada");
-    //let mut itervals = Vec::with_capacity(intervals_sorted.len());
-    let mut open_intervals: BinaryHeap<Reverse<&(u32, u32)>> = BinaryHeap::new();
+/// Sort the interval by first entry and reverse by second
+///
+/// ```
+///
+/// ```
+pub fn sort_vector(intervals: &mut Vec<[u32; 3]>){
+    intervals.sort_by(|a, b| (a[0].cmp(&b[0]).then(b[1].cmp(&a[1]))));
 
-    // The result vector
-    let mut result = HashMap::with_capacity(intervals_sorted.len());
-    // Iterate over sorted unique interval vector
-    for tuple1 in intervals_sorted.iter() {
-        // Remove tuples which have a smaller end then the start of the new tuple
-        open_intervals.retain(|a| tuple1.0 < a.0.1);
-
-        // If empty (just at the start), add to open-intervals
-        if !open_intervals.is_empty() {
-
-            // Sort the open intervals by start and end
-
-
-            //Get those that have bigger end than the one you are looking at
-            for interval in open_intervals.iter(){
-                if interval.0.1 >= tuple1.1 - 1{
-                    result.entry(tuple1).or_insert(vec![]).push( interval.0)
-                } else {
-                    break
-                }
-            }
-
-            // println!("open {:?}", open_intervals);
-            // println!("tuple {:?}", tuple1);
-            // println!("result {:?}\n", result);
-        }
-        open_intervals.push(Reverse(tuple1));
-
-    }
-    result.shrink_to_fit();
-    return result
 }
 
 
@@ -122,7 +68,7 @@ pub fn make_nested22<'a, 'b>(intervals_sorted: &'a Vec<(u32, u32)>) -> HashMap<&
 #[cfg(test)]
 mod tests {
     use log::info;
-    use crate::{sort_vector, make_nested2};
+    use crate::{make_nested, sort_vector};
 
 
     fn init() {
@@ -134,16 +80,18 @@ mod tests {
 
 
     #[test]
-    fn basic() {
+    fn basic()  {
         init();
         // We test remove and and general function
         info!("\nRunning test 1");
         //assert_eq!(2 + 2, 4);
 
-        let mut intervals: Vec<(u32, u32)> = vec![(1,10), (2,4), (7,9), (8,9), (1,20), (3,20), (1,3)];;
+        let mut intervals: Vec<[u32; 3]> = vec![[1,10,1], [2,4,2], [7,9,3], [8,9,4], [1,20,5], [3,20,6], [1,3, 7]];;
         assert_eq!(intervals.len(), 7);
         sort_vector(&mut intervals);
-        info!("");
+        let intersection = make_nested(&intervals);
+        let vecc: Vec<(u32, u32)> = Vec::new();
+        assert_eq!(intersection, vecc);
     }
 
 }
